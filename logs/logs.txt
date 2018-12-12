@@ -1,0 +1,4 @@
+MySQL database was connected at localhost:3306
+Server is listening at localhost:1337
+SIGINT signal received.
+MySQL database connection was closed

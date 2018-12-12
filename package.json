@@ -1,0 +1,22 @@
+{
+  "name": "music_queue",
+  "version": "1.0.0",
+  "description": "This is the clone of SoundCloud which I created just for practice.",
+  "main": "index.js",
+  "dependencies": {
+    "argon2": "^0.20.0",
+    "body-parser": "^1.18.3",
+    "connect-mongo": "^2.0.3",
+    "express": "^4.16.4",
+    "express-handlebars": "^3.0.0",
+    "express-session": "^1.15.6",
+    "mongoose": "^5.3.14",
+    "mysql": "^2.16.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kemarskiy Nikita",
+  "license": "ISC"
+}
