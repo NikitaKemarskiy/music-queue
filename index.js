@@ -61,7 +61,7 @@ server.use(session(config.session)); // Session
 server.use(express.static(path.join(process.cwd(), 'public'))); // Static files
 
 // Routes
-const routes = require('./api/routes/routes.js')(database); // Routing file
+const routes = require('./api/routes/routes.js')(database, config); // Routing file
 server.use('/', routes); // Routing
 
 server.use(function(req, res, next) { // Error 404
