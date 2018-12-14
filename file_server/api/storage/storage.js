@@ -23,6 +23,7 @@ const storage = {
 	}
 }
 
+// Exports
 module.exports = storage;
 
 

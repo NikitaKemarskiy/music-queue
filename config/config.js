@@ -5,13 +5,6 @@ const config = function(session) {
 	const MongoStore = require('connect-mongo')(session);
 
 	// Config
-	this.database = {
-		host: 'localhost', // Database host
-		port: 3306, // Database port
-		user: 'root', // Database user
-		password: 'nikita12', // Database password
-		database: 'music_queue', // Database name
-	};
 	this.server = {
 		host: 'localhost', // Server host
 		port: 1337 // Server port
@@ -19,6 +12,9 @@ const config = function(session) {
 	this.fileServer = {
 		host: 'localhost', // FileServer host
 		port: 1488 // FileServer port
+	};
+	this.cache = {
+		maxAge: 20 * 60e3 // Cache data max age time (20 minutes)
 	};
 	this.session = {
 		name: 'session_id', // Name of session id value

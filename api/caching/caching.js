@@ -30,4 +30,5 @@ const caching = function() {
 	}
 };
 
+// Exports
 module.exports = new caching();

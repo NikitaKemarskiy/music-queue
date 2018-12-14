@@ -43,6 +43,7 @@ const error = function(str) {
 	errorStream.write(str, 'utf8');
 }
 
+// Exports
 module.exports = {
 	startLogging,
 	endLogging,

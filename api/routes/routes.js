@@ -12,7 +12,7 @@ const caching = require(path.join(process.cwd(), 'api', 'caching', 'caching.js')
 const router = express.Router();
 
 // Routing initialization function
-const router_init = function(database, config) {
+const router_init = function(config) {
 	// Functions
 	const handlers = {
 		sendMain: function(req, res) { // Send main page request handler
@@ -29,7 +29,7 @@ const router_init = function(database, config) {
 			let timeDiff = Date.now() - cache.updated;
 			logging.log(`Data was cached ${timeDiff / 1e3} seconds ago`);
 
-			if (cache.empty || timeDiff > 60e3) {
+			if (cache.empty || timeDiff > config.cache.maxAge) {
 				// Variables for a request to the file server
 				let data = '';
 				const options = {
