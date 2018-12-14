@@ -2,9 +2,7 @@ window.onload = function() {
 	// Constant DOM elements
 	const block = document.querySelector('div.app div.block');
 	const uploadBlock = document.getElementsByClassName('upload-block')[0];
-
-	// Constants
-	const uploadUrl = '/files/upload';
+	const trackList = document.querySelector('div.content div.music div.tracks ul');
 
 	// Variables
 	let dragenterCounter = 0; // Counter for drag events to prevent dragleave event when hover child elements
@@ -34,23 +32,8 @@ window.onload = function() {
 
 			// Getting dropped files
 			let files = event.dataTransfer.files; 
-			// Creating form data with files to upload
-			let formData = processing.createUploadFormData(files); 
-			// Creating new instance of XMLHttpRequest for sending AJAX-requests
-			let xhttp = new XMLHttpRequest();
-			
-			// AJAX request finished
-			xhttp.onreadystatechange = function() {
-				if (this.readyState === 4 && this.status === 200) {
-					console.log('===================');
-					console.log('Files were received');
-					console.log('===================');
-				}
-			};
-			
-			xhttp.open('POST', uploadUrl, true);
-			xhttp.setRequestHeader('Content-type', 'multipart/form-data');
-			xhttp.send(formData);
+			// Sending new files to server
+			upload.sendNewFiles(files);
 		}
 	}
 
@@ -67,4 +50,7 @@ window.onload = function() {
 	block.addEventListener('dragenter', handlers.increaseDragenterCounter);
 	block.addEventListener('dragleave', handlers.decreaseDragenterCounter);
 	block.addEventListener('drop', handlers.sendDroppedFile);
+
+	generating.clearTrackList(trackList);
+	setTimeout(generating.fillTrackList, 1000, trackList);
 }	

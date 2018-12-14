@@ -70,10 +70,19 @@ server.get('/files/get', function(req, res) { // Get files get request handler
 	storage.getFilesJSON().then(function(items) {
 		res.header('StatusCode', '200'); // Success code
 		res.header('Content-Type', 'application/json; charset=utf-8');
-		res.end(JSON.stringify(items));
+
+		let tracks = Object.create({});
+		tracks.items = items.map(function(item) {
+			return {
+				name: item
+			};
+		});
+
+		res.end(JSON.stringify(tracks));
 	}).catch(function(error) {
 		res.header('StatusCode', '500'); // Internal server error code
 		res.header('Content-Type', 'text/plain; charset=utf-8');
+
 		res.end(`Error: ${error.message}`);
 		logging.error(`Error: ${error.message}`);
 	});
@@ -101,8 +110,8 @@ server.post('/files/upload', function(req, res) { // Upload files post request h
 // Express.js
 server.listen(config.server.port, config.server.host, function(error) {
 	if (error) {
-		logging.error(`Server error: ${error.message}`);
+		logging.error(`File server error: ${error.message}`);
 	} else {
-		logging.log(`Server is listening at ${config.server.host}:${config.server.port}`);
+		logging.log(`File server is listening at ${config.server.host}:${config.server.port}`);
 	}
 });
