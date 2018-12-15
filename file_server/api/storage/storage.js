@@ -4,40 +4,16 @@ const fs = require('fs');
 
 // Constants
 const STORAGEPATH = path.join(process.cwd(), 'storage'); // Constant value for storage folder
-const DATAPATH = path.join(process.cwd(), 'api', 'storage', 'data.json'); // Constant value for data.json
+const DATAPATH = path.join(process.cwd(), 'api', 'storage', 'data.json'); // Constant value for the path to data.json
 
 // Libraries
 const logging = require(path.join(process.cwd(), 'api', 'logging', 'logging.js')); // Functions for logging in logs files
 
 // Functions
-const functions = {
-	readDataJSON: function() {
-		try {
-			let data = fs.readFileSync(DATAPATH, 'utf8');
-			return JSON.parse(data);
-		} catch(error) {
-			logging.error(`Error: ${error.message}`);
-		}
-	},
-	writeDataJSON: function(data) {
-		return new Promise(function(resolve, reject) {
-			let dataJSON = JSON.stringify(data);
-			fs.writeFile(DATAPATH, dataJSON, 'utf8', function(error) {
-				if (error) {
-					reject(error);
-				} else {
-					resolve();
-				}
-			});
-		});
-	}
-};
-
-// Storage
 const storage = function() {
-	
-	// Read tracks data from data.json file, write it into object to use it
-	let data = functions.readDataJSON();
+	const self = this;	
+	let data = {};
+	let lastUpdate;
 
 	// Function that increments plays counter of a special track
 	this.addPlay = function(track) {
@@ -59,25 +35,69 @@ const storage = function() {
 
 	// Function that returns tracks data object
 	this.getTracksData = function() {
-		return data;
+		return new Promise(function(resolve, reject) {
+			if ((Date.now() - lastUpdate) > 60 * 1e3) {
+				self.saveTracksData().then(function(result) {
+					logging.log(result);
+					resolve(data);
+				}).catch(function(error) {
+					logging.error(`Error: ${error.message}`);
+					resolve(data);
+				});
+			} else {
+				resolve(data);
+			}
+		});
+	}
+
+	// Function that reads tracks data from data.json file
+	this.readTracksData = function() {
+		return new Promise(function(resolve, reject) {
+			fs.readFile(DATAPATH, 'utf8', function(error, buffer) {
+				if (error) {
+					logging.error(`Error: ${error.message}`);
+					reject(error);
+				} else {
+					resolve(JSON.parse(buffer));
+				}
+			});
+		});
 	}
 
 	// Function that saves tracks data to data.json file
 	this.saveTracksData = function() {
 		return new Promise(function(resolve, reject) {
-			writeDataJSON(data).then(function() {
-				resolve();
+			const dataJSON = JSON.stringify(data);
+			fs.writeFile(DATAPATH, dataJSON, 'utf8', function(error) {
+				if (error) {
+					logging.error(`Error: ${error.message}`);
+					reject(error);
+				} else {
+					lastUpdate = Date.now();
+					resolve('Data.json was written');
+				}
+			});
+		});
+	}
+
+	// Function that initializes new storage item
+	this.initialize = function() {
+		return new Promise(function(resolve, reject) {
+			self.readTracksData().then(function(obj) {
+				data = obj;
+				lastUpdate = Date.now();
+				logging.log('=============');
+				logging.dir(data);
+				logging.log('=============');
+				resolve('Storage was initialized');
 			}).catch(function(error) {
 				reject(error);
 			});
 		});
 	}
-
-	// Interval for saving tracks data to data.json file once in 30 minutes
-	setInterval(this.saveTracksData, 30 * 60 * 1e3);
 }
 
 // Exports
-module.exports = new storage();
+module.exports = storage;
 
 

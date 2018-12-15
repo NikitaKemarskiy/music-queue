@@ -55,6 +55,10 @@ const router_init = function(config) {
 					resp.on('end', function() {
 						logging.log('No more data in response.');
 						caching.insert(JSON.parse(data));
+
+						console.log('=> Data:');
+						console.dir(data);
+						
 						res.end(data);
 					});
 				});
@@ -67,6 +71,10 @@ const router_init = function(config) {
 			} else {
 				logging.log('=> Take files from cache');
 				let data = JSON.stringify(caching.get().data);
+
+				console.log('=> Data:');
+				console.dir(data);
+				
 				res.end(data);
 			}
 		},

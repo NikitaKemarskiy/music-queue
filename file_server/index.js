@@ -42,7 +42,8 @@ const upload = multer({
 }).array('files');
 
 // Libraries
-const storage = require(path.join(process.cwd(), 'api', 'storage', 'storage.js')); // Functions for work with storage
+const storageConstructor = require(path.join(process.cwd(), 'api', 'storage', 'storage.js')); // Functions for work with storage
+const storage = new storageConstructor();
 
 // Process listeners
 process.on('exit', function(code) { // Exit the program listener
@@ -82,23 +83,15 @@ process.on('SIGINT', () => { // SIGINT Linux signal listener
 
 // Routes
 server.get('/files/get', function(req, res) { // Get files get request handler
-	try {
-		const items = storage.getTracksData();
+	storage.getTracksData().then(function(items) {
 		res.header('StatusCode', '200'); // Success code
 		res.header('Content-Type', 'application/json; charset=utf-8');
 
 		res.end(JSON.stringify(items));
-	} catch(error) {
-		res.header('StatusCode', '500'); // Internal server error code
-		res.header('Content-Type', 'text/plain; charset=utf-8');
-
-		res.end(`Error: ${error.message}`);
-		logging.error(`Error: ${error.message}`);
-	}
+	});
 });
 
 server.post('/files/upload', function(req, res) { // Upload files post request handler
-
 	upload(req, res, function(error) { // Calling function for files upload
 		if (error instanceof multer.MulterError) { // Error (invalid files)
 	    	logging.error(`Error: ${error.message}`);
@@ -110,7 +103,7 @@ server.post('/files/upload', function(req, res) { // Upload files post request h
 	    	res.end('Error uploading files');
 	    } else { // Everything is ok
 	    	logging.dir(req.files);
-	    	
+
 	    	res.header('StatusCode', '200');	
 	    	res.end('Files were uploaded');
 		}
@@ -118,10 +111,15 @@ server.post('/files/upload', function(req, res) { // Upload files post request h
 });
 
 // Express.js
-server.listen(config.server.port, config.server.host, function(error) {
-	if (error) {
-		logging.error(`File server error: ${error.message}`);
-	} else {
-		logging.log(`File server is listening at ${config.server.host}:${config.server.port}`);
-	}
+storage.initialize().then(function(result) {
+	logging.log(result);
+	server.listen(config.server.port, config.server.host, function(error) {
+		if (error) {
+			logging.error(`File server error: ${error.message}`);
+		} else {
+			logging.log(`File server is listening at ${config.server.host}:${config.server.port}`);
+		}
+	});
+}).catch(function(error) {
+	throw new Error(error);
 });
