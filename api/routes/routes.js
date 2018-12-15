@@ -74,6 +74,42 @@ const router_init = function(config) {
 			res.header('StatusCode', '200');
 			res.header('Content-Type', 'text/plain; charset=utf-8');
 
+			console.log('=========================');
+			console.dir(req);
+			console.log('=========================');
+			/*let data = '';
+			const options = {
+				host: config.fileServer.host,
+				port: config.fileServer.port,
+				path: '/files/upload',
+				method: 'POST',
+				headers: {
+					accept: 'text/plain'
+				}
+			};
+
+			// Sending request to the file server
+			const reqt = http.request(options, function(resp) {
+				// TCP-connection was created
+				logging.log('=> Connected to file server, sending files');
+				resp.setEncoding('utf8');
+				// Chuck of data was received
+				resp.on('data', function(chunk) {
+					data += chunk;
+				});
+				// End of data
+				resp.on('end', function() {
+					logging.log('No more data in response.');
+					res.end(data);
+				});
+			});
+
+			reqt.on('error', function(error) {
+				logging.error(`Error: ${error.message}`);
+			});
+			// Ending TCP-connection
+			reqt.end();*/
+
 			res.end('Files were received');
 		}
 	};

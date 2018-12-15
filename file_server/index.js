@@ -3,23 +3,21 @@ const express = require('express');
 const path = require('path');
 const multer = require('multer');
 
-// Libraries
-const storage = require(path.join(process.cwd(), 'api', 'storage', 'storage.js')); // Functions for work with storage 
+// Logging
 const logging = require(path.join(process.cwd(), 'api', 'logging', 'logging.js')); // Functions for logging in logs files
 
 // Constants
 const STORAGEPATH = path.join(process.cwd(), 'storage'); // Constant value for storage folder
 const fileTypes = [	// Audio files types
-	'3gp', 'aa', 'aac', 'aax', 'act',
-	'aiff', 'amr', 'ape', 'au', 'awb',
-	'dct', 'dss', 'dvf', 'flac', 'gsm',
-	'iklax', 'ivs', 'm4a', 'm4b', 'm4p',
-	'mmf', 'mp3', 'mpc', 'msv', 'nsf',
-	'ogg', 'oga', 'mogg', 'opus', 'ra',
-	'rm', 'raw', 'sln', 'tta', 'vox',
-	'wav', 'wma', 'wv', 'webm', '8svx'
+	'.3gp', '.aa', '.aac', '.aax', '.act',
+	'.aiff', '.amr', '.ape', '.au', '.awb',
+	'.dct', '.dss', '.dvf', '.flac', '.gsm',
+	'.iklax', '.ivs', '.m4a', '.m4b', '.m4p',
+	'.mmf', '.mp3', '.mpc', '.msv', '.nsf',
+	'.ogg', '.oga', '.mogg', '.opus', '.ra',
+	'.rm', '.raw', '.sln', '.tta', '.vox',
+	'.wav', '.wma', '.wv', '.webm', '.8svx'
 ];
-
 
 // Configuration
 const config = require(path.join(process.cwd(), 'config', 'config.js'));
@@ -43,6 +41,9 @@ const upload = multer({
 	}
 }).array('files');
 
+// Libraries
+const storage = require(path.join(process.cwd(), 'api', 'storage', 'storage.js')); // Functions for work with storage
+
 // Process listeners
 process.on('exit', function(code) { // Exit the program listener
 	logging.log(`Closing the program... Status code: ${code}`);
@@ -51,41 +52,49 @@ process.on('exit', function(code) { // Exit the program listener
 
 process.on('uncaughtException', function(error) { // Uncaught error listener
 	logging.error(`Error: ${error.message}`);
-	process.exit(1); // Exit the program with a status code 1 (error)
+	storage.saveTracksData().then(function() {
+		process.exit(1); // Exit the program with a status code 1 (error)
+	}).catch(function(error) {
+		logging.error(`Error: ${error.message}`);
+		process.exit(1); // Exit the program with a status code 1 (error)
+	});
 });
 
 process.on('SIGTERM', () => { // SIGTERM Linux signal listener
 	logging.log('SIGTERM signal received.');
-	process.exit(0); // Exit the program with a status code 0 (success)
+	storage.saveTracksData().then(function() {
+		process.exit(0); // Exit the program with a status code 0 (success)
+	}).catch(function(error) {
+		logging.error(`Error: ${error.message}`);
+		process.exit(0); // Exit the program with a status code 0 (success)
+	});
 });
 
 process.on('SIGINT', () => { // SIGINT Linux signal listener
 	logging.log('SIGINT signal received.');
-	process.exit(0); // Exit the program with a status code 0 (success)
+	storage.saveTracksData().then(function() {
+		process.exit(0); // Exit the program with a status code 0 (success)
+	}).catch(function(error) {
+		logging.error(`Error: ${error.message}`);
+		process.exit(0); // Exit the program with a status code 0 (success)
+	});
 });
 
 // Routes
 server.get('/files/get', function(req, res) { // Get files get request handler
-
-	storage.getFilesJSON().then(function(items) {
+	try {
+		const items = storage.getTracksData();
 		res.header('StatusCode', '200'); // Success code
 		res.header('Content-Type', 'application/json; charset=utf-8');
 
-		let tracks = Object.create({});
-		tracks.items = items.map(function(item) {
-			return {
-				name: item
-			};
-		});
-
-		res.end(JSON.stringify(tracks));
-	}).catch(function(error) {
+		res.end(JSON.stringify(items));
+	} catch(error) {
 		res.header('StatusCode', '500'); // Internal server error code
 		res.header('Content-Type', 'text/plain; charset=utf-8');
 
 		res.end(`Error: ${error.message}`);
 		logging.error(`Error: ${error.message}`);
-	});
+	}
 });
 
 server.post('/files/upload', function(req, res) { // Upload files post request handler
@@ -101,6 +110,7 @@ server.post('/files/upload', function(req, res) { // Upload files post request h
 	    	res.end('Error uploading files');
 	    } else { // Everything is ok
 	    	logging.dir(req.files);
+	    	
 	    	res.header('StatusCode', '200');	
 	    	res.end('Files were uploaded');
 		}

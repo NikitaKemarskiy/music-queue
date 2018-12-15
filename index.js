@@ -25,19 +25,16 @@ process.on('exit', function(code) { // Exit the program listener
 
 process.on('uncaughtException', function(error) { // Uncaught error listener
 	logging.error(`Error: ${error.message}`);
-	logging.log(result);
 	process.exit(1); // Exit the program with a status code 1 (error)
 });
 
 process.on('SIGTERM', () => { // SIGTERM Linux signal listener
 	logging.log('SIGTERM signal received.');
-	logging.log(result);
 	process.exit(0); // Exit the program with a status code 0 (success)
 });
 
 process.on('SIGINT', () => { // SIGINT Linux signal listener
 	logging.log('SIGINT signal received.');
-	logging.log(result);
 	process.exit(0); // Exit the program with a status code 0 (success)
 });
 
