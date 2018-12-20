@@ -1,7 +1,7 @@
 // Modules
 const express = require('express');
 const path = require('path');
-const multer = require('multer');
+//const multer = require('multer');
 
 // Logging
 const logging = require(path.join(process.cwd(), 'api', 'logging', 'logging.js')); // Functions for logging in logs files
@@ -92,7 +92,7 @@ server.get('/files/get', function(req, res) { // Get files get request handler
 });
 
 server.post('/files/upload', function(req, res) { // Upload files post request handler
-	upload(req, res, function(error) { // Calling function for files upload
+	/*upload(req, res, function(error) { // Calling function for files upload
 		if (error instanceof multer.MulterError) { // Error (invalid files)
 	    	logging.error(`Error: ${error.message}`);
 	    	res.header('StatusCode', '400');
@@ -107,7 +107,7 @@ server.post('/files/upload', function(req, res) { // Upload files post request h
 	    	res.header('StatusCode', '200');	
 	    	res.end('Files were uploaded');
 		}
-	});
+	});*/
 });
 
 // Express.js

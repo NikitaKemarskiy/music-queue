@@ -1,7 +1,6 @@
 // Modules
 const express = require('express');
 const http = require('http');
-const bodyParser = require('body-parser');
 const path = require('path');
 const hbs = require('express-handlebars');
 const session = require('express-session');
@@ -42,8 +41,6 @@ process.on('SIGINT', () => { // SIGINT Linux signal listener
 server.engine('hbs', hbs({ extname: 'hbs' })); // Templating ("Handlebars") 
 server.set('view engine', 'hbs');
 server.set('views', __dirname);
-server.use(bodyParser.urlencoded({ extended: true })); // Body parser to process post requests
-server.use(bodyParser.json());
 server.use(session(config.session)); // Session
 server.use(express.static(path.join(process.cwd(), 'public'))); // Static files
 

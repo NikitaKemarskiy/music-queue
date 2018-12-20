@@ -51,6 +51,6 @@ window.onload = function() {
 	block.addEventListener('dragleave', handlers.decreaseDragenterCounter);
 	block.addEventListener('drop', handlers.sendDroppedFile);
 
-	generating.clearTrackList(trackList);
-	setTimeout(generating.fillTrackList, 1000, trackList);
+	// Initial tracklist load
+	generating.fillTrackList(trackList);
 }	

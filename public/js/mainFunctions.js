@@ -103,13 +103,13 @@ const upload = { // Functions for uploading new files to server
 		xhttp.onreadystatechange = function() {
 			if (this.readyState === 4 && this.status === 200) {
 				console.log('===================');
-				console.log('Files were received');
+				console.log(this.response.toString());
 				console.log('===================');
 			}
 		};
 		
 		xhttp.open('POST', uploadUrl, true);
-		xhttp.setRequestHeader('Content-type', 'multipart/form-data');
+		//xhttp.setRequestHeader('Content-type', 'multipart/form-data');
 		xhttp.send(formData);
 	}
 }
