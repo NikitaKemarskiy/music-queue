@@ -2,6 +2,7 @@
 const express = require('express');
 const path = require('path');
 const formidable = require('formidable');
+const fs = require('fs');
 
 // Logging
 const logging = require(path.join(process.cwd(), 'api', 'logging', 'logging.js')); // Functions for logging in logs files
@@ -95,12 +96,23 @@ server.post('/files/upload', function(req, res) { // Upload files post request h
 	});
 
 	form.on('file', function(name, file) { // New file was received
-		console.dir({
-			size: file.size,
-			path: file.path,
-			name: file.name,
-			type: file.type
-		});
+		const type = '.' + file.type.substring(file.type.indexOf('/') + 1); // Get file extension from file.type
+		if (fileTypes.includes(type)) { // Uploaded file extension is allowed
+			console.dir({
+				size: file.size,
+				path: file.path,
+				name: file.name,
+				type: file.type
+			});
+		} else { // Uploaded file extension isn't allowed
+			fs.unlink(file.path, function(error) {
+				if (error) {
+					logging.error(`Error: ${error.message}`);
+				} else {
+					logging.log(`File ${file.name} has a forbidden extension`);
+				}
+			});
+		}		
 	});
 
 	form.on('end', function() { // Upload was finished
