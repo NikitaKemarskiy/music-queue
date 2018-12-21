@@ -1,7 +1,7 @@
 // Modules
 const express = require('express');
 const path = require('path');
-//const multer = require('multer');
+const formidable = require('formidable');
 
 // Logging
 const logging = require(path.join(process.cwd(), 'api', 'logging', 'logging.js')); // Functions for logging in logs files
@@ -25,21 +25,6 @@ const config = require(path.join(process.cwd(), 'config', 'config.js'));
 // Initialization
 const server = express(); // Server
 logging.startLogging(); // Open writable streams for logging
-const uploadStorage = multer.diskStorage({
-	destination: function (req, file, callback) { // Function which sets the folder for uploading files
-		let uploadPath = path.join(STORAGE_PATH, req.body.email, req.body.path); // Path for uploading files
-		callback(null, uploadPath);
-	},
-	filename: function (req, file, callback) { // Functions which sets uploaded file name
-		callback(null, file.originalname);
-	}
-});
-const upload = multer({ 
-	storage: uploadStorage,
-	limits: {
-		fileSize: 1024 * 1024 * 1024 // 1GB limit 
-	}
-}).array('files');
 
 // Libraries
 const storageConstructor = require(path.join(process.cwd(), 'api', 'storage', 'storage.js')); // Functions for work with storage
@@ -92,22 +77,38 @@ server.get('/files/get', function(req, res) { // Get files get request handler
 });
 
 server.post('/files/upload', function(req, res) { // Upload files post request handler
-	/*upload(req, res, function(error) { // Calling function for files upload
-		if (error instanceof multer.MulterError) { // Error (invalid files)
-	    	logging.error(`Error: ${error.message}`);
-	    	res.header('StatusCode', '400');
-	    	res.end('Error uploading files');
-	    } else if (error) { // Unhandled error in code
-	    	logging.error(`Error: ${error.message}`);
-	    	res.header('StatusCode', '400');	
-	    	res.end('Error uploading files');
-	    } else { // Everything is ok
-	    	logging.dir(req.files);
+	const form = formidable.IncomingForm(); // Create incoming formidable form
+	form.uploadDir = STORAGEPATH; // Upload directory for files
+	form.keepExtensions = true; // Keep files extensions
+	form.maxFieldsSize = 10 * 1024 * 1024; // Max fields size except files - 10 MB 
+	form.multiples = true; // Allow to upload multiple files
+	form.hash = false; // Don't create hash
+	form.maxFileSize = 50 * 1024 * 1024; // Max file size - 50 MB
 
-	    	res.header('StatusCode', '200');	
-	    	res.end('Files were uploaded');
-		}
-	});*/
+	form.on('error', function(error) { // Upload error occured
+		logging.error(`Error: ${error.message}`);
+		res.end(`Error: files can't be uploaded`);
+	});
+
+	form.on('fileBegin', function(name, file) { // New file detected in the upload stream
+		file.path = path.join(form.uploadDir, file.name);
+	});
+
+	form.on('file', function(name, file) { // New file was received
+		console.dir({
+			size: file.size,
+			path: file.path,
+			name: file.name,
+			type: file.type
+		});
+	});
+
+	form.on('end', function() { // Upload was finished
+		logging.log(`Files were successfully received`);
+		res.end('Files were received');
+	});
+
+	form.parse(req); // Parse upload form
 });
 
 // Express.js
