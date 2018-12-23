@@ -6,6 +6,7 @@ const FILESLISTURL = '/files/get';
 // Variables
 let audio; // Variable for current audio instance
 let currentTrack; // Variable for current track name
+let currentBtn; // Variable for current play button
 
 const processing = { // Functions for processing some data
 	
@@ -122,32 +123,62 @@ const upload = { // Functions for uploading new files to server
 const play = { // Functions for playing tracks
 
 	// Function that sends request for playing the track
-	playFile: function(fileName) {
+	playFile: function(fileName, btn) {
 		if (currentTrack === fileName) { // Play/pause current track
 			if (!audio.paused) { // Current track is playing
-				play.pauseTrack(); // Pause current track
+				play.pauseTrack(currentBtn); // Pause current track
 			} else { // Current track is paused
-				play.playTrack(); // Play current track
+				play.playTrack(currentBtn); // Play current track
 			}
 		} else { // Play another track
 			if (!!audio && !audio.paused) { // Track is already playing
-				play.pauseTrack(); // Pause this track
+				play.pauseTrack(currentBtn); // Pause this track
 			}
 			currentTrack = fileName; // Change current track name
+			currentBtn = btn;
 			audio = new Audio(PLAYURL + fileName); // Create new audio instance
-			play.playTrack(); // Play new track
+			play.playTrack(currentBtn); // Play new track
 		}
 	},
 
 	// Function that plays current track
-	playTrack: function() {
+	playTrack: function(btn) {
 		audio.play();
+		btn.style.backgroundImage = `url('/img/pauseTrack.svg')`;
+		btn.style.backgroundSize = `60% 60%`;
 		console.log(`Playing the track: ${currentTrack}`);
 	},
 
 	// Function that pauses current track
-	pauseTrack: function() {
+	pauseTrack: function(btn) {
 		audio.pause();
+		btn.style.backgroundImage = `url('/img/playTrack.svg')`;
+		btn.style.backgroundSize = `70% 70%`;
+
 		console.log(`Track was paused: ${currentTrack}`);
+	}
+}
+
+const player = { // Functions for controlling player
+
+	// Function that changes player content when starting playing new track
+	playFilePlayer: function(fileName, playerItems) {
+		if (currentTrack === fileName) { // Play/pause current track
+			if (!audio.paused) { // Current track is playing
+				player.playTrackPlayer(playerItems.buttons.play);
+			} else { // Current track is paused
+				player.pauseTrackPlayer(playerItems.buttons.play);
+			}
+		}
+	},
+
+	// Function that starts playing with player
+	playTrackPlayer: function(btn) {
+		btn.style.background = `url('/img/pause.svg') no-repeat 55% center`;
+	},
+
+	// Function that pauses playing with player
+	pauseTrackPlayer: function(btn) {
+		btn.style.background = `url('/img/play.svg') no-repeat 55% center`;
 	}
 }

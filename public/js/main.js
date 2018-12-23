@@ -4,6 +4,15 @@ window.onload = function() {
 	const uploadBlock = document.getElementsByClassName('upload-block')[0];
 	const trackList = document.querySelector('div.content div.music div.tracks ul');
 	const playButton = document.querySelector('div.content div.music div.tracks ul li div.btn');
+	const playerItems = {
+		buttons: {
+			prev: document.querySelector('div.app div.player div.player-content div.btn.btn-prev'),
+			play: document.querySelector('div.app div.player div.player-content div.btn.btn-play'),
+			next: document.querySelector('div.app div.player div.player-content div.btn.btn-next'),
+			repeat: document.querySelector('div.app div.player div.player-content div.btn.btn-repeat'),
+			shuffle: document.querySelector('div.app div.player div.player-content div.btn.btn-shuffle'),
+		},
+	};
 
 	// Variables
 	let dragenterCounter = 0; // Counter for drag events to prevent dragleave event when hover child elements
@@ -46,7 +55,8 @@ window.onload = function() {
 				}
 			}
 			const trackName = listItem.children[index].textContent;
-			play.playFile(trackName);
+			play.playFile(trackName, this);
+			player.playFilePlayer(trackName, playerItems);
 		}
 	}
 
