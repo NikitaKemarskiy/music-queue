@@ -1,6 +1,5 @@
 // Modules
 const path = require('path');
-const http = require('http');
 const request = require('request');
 
 // Libraries
@@ -9,6 +8,7 @@ const caching = require(path.join(process.cwd(), 'api', 'caching', 'caching.js')
 
 // Constants
 const UPLOADURL = 'http://localhost:1488/files/upload';
+const PLAYURL = 'http://localhost:1488/files/play/';
 
 // Functions
 const handlersConstructor = function(config) {
@@ -66,6 +66,13 @@ const handlersConstructor = function(config) {
 			res.header('Content-Type', 'text/plain; charset=utf-8');
 
 			req.pipe(request.post(UPLOADURL)).pipe(res); // Piping request to the file server
+		},
+		playFile: function(req, res) { // Play the track request handler
+			res.header('StatusCode', '200');
+			res.header('Content-Type', 'text/plain; charset=utf-8');
+
+			request.get(PLAYURL + req.params.fileName).pipe(res); // Request to the file server
+			logging.log(`Playing the track: ${req.params.fileName}`);
 		}
 	}
 	return handlers;

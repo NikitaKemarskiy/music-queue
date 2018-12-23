@@ -77,6 +77,10 @@ server.get('/files/get', function(req, res) { // Get files get request handler
 	});
 });
 
+server.get('/files/play/:fileName', function(req, res) { // Play file get request handler
+	storage.playTrack(req.params.fileName, res);
+});
+
 server.post('/files/upload', function(req, res) { // Upload files post request handler
 	const form = formidable.IncomingForm(); // Create incoming formidable form
 	form.uploadDir = STORAGEPATH; // Upload directory for files
@@ -104,6 +108,7 @@ server.post('/files/upload', function(req, res) { // Upload files post request h
 				name: file.name,
 				type: file.type
 			});
+			storage.addTrack(file.name); // Add uploaded file to the storage data object
 		} else { // Uploaded file extension isn't allowed
 			fs.unlink(file.path, function(error) {
 				if (error) {

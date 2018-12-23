@@ -95,6 +95,14 @@ const storage = function() {
 			});
 		});
 	}
+
+	this.playTrack = function(track, res) {
+		const readStream = fs.createReadStream(path.join(STORAGEPATH, track));
+		readStream.pipe(res);
+		readStream.on('end', function() {
+			logging.log(`The ${track} was sent for playing`);
+		});
+	}
 }
 
 // Exports

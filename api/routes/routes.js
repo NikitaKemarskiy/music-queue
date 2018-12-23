@@ -12,15 +12,16 @@ const handlersConstructor = require(path.join(process.cwd(), 'api', 'routes', 'h
 const router = express.Router();
 
 // Routing initialization function
-const router_init = function(config) {
+const routerInit = function(config) {
 	const handlers = handlersConstructor(config);
 	// Routes
 	router.get('/', handlers.sendMain);
 	router.get('/files/get', handlers.getFiles);
+	router.get('/files/play/:fileName', handlers.playFile);
 	router.post('/files/upload', handlers.uploadFiles);
 
 	return router;
 }
 
 // Exports
-module.exports = router_init;
+module.exports = routerInit;

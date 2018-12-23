@@ -3,6 +3,7 @@ window.onload = function() {
 	const block = document.querySelector('div.app div.block');
 	const uploadBlock = document.getElementsByClassName('upload-block')[0];
 	const trackList = document.querySelector('div.content div.music div.tracks ul');
+	const playButton = document.querySelector('div.content div.music div.tracks ul li div.btn');
 
 	// Variables
 	let dragenterCounter = 0; // Counter for drag events to prevent dragleave event when hover child elements
@@ -34,6 +35,18 @@ window.onload = function() {
 			let files = event.dataTransfer.files; 
 			// Sending new files to server
 			upload.sendNewFiles(files);
+		},
+		playTrack: function(event) {
+			const listItem = this.parentElement;
+			let index = 0; 
+			for (let i = 0; i < listItem.children.length; i++) {
+				if (listItem.children[i].className === 'track-name') {
+					index = i;
+					break;
+				}
+			}
+			const trackName = listItem.children[index].textContent;
+			play.playFile(trackName);
 		}
 	}
 
@@ -52,5 +65,5 @@ window.onload = function() {
 	block.addEventListener('drop', handlers.sendDroppedFile);
 
 	// Initial tracklist load
-	generating.fillTrackList(trackList);
+	generating.fillTrackList(trackList, handlers.playTrack);
 }	

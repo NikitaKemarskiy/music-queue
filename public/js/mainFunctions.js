@@ -1,6 +1,11 @@
 // Constants
-const uploadUrl = '/files/upload';
-const filesListUrl = '/files/get';
+const UPLOADURL = '/files/upload';
+const PLAYURL = '/files/play/';
+const FILESLISTURL = '/files/get';
+
+// Variables
+let audio; // Variable for current audio instance
+let currentTrack; // Variable for current track name
 
 const processing = { // Functions for processing some data
 	
@@ -43,7 +48,7 @@ const generating = { // Functions for generating page content
 				}
 			};
 			
-			xhttp.open('GET', filesListUrl, true);
+			xhttp.open('GET', FILESLISTURL, true);
 			xhttp.send();
 		});
 	},
@@ -56,7 +61,7 @@ const generating = { // Functions for generating page content
 	},
 
 	// Function that fills track list
-	fillTrackList: function(trackList) {
+	fillTrackList: function(trackList, handler) {
 		generating.getFilesList().then(function(files) {
 			files.forEach(function(track) {
 				// List item DOM element
@@ -66,6 +71,7 @@ const generating = { // Functions for generating page content
 				// Items inside list item
 				let trackItemBtn = document.createElement('div');
 				trackItemBtn.className = 'btn';
+				trackItemBtn.onclick = handler;
 				let trackItemName = document.createElement('p');
 				let trackItemNameText = document.createTextNode(track.name);
 				trackItemName.className = 'track-name';
@@ -108,8 +114,40 @@ const upload = { // Functions for uploading new files to server
 			}
 		};
 		
-		xhttp.open('POST', uploadUrl, true);
-		//xhttp.setRequestHeader('Content-type', 'multipart/form-data');
+		xhttp.open('POST', UPLOADURL, true);
 		xhttp.send(formData);
+	}
+}
+
+const play = { // Functions for playing tracks
+
+	// Function that sends request for playing the track
+	playFile: function(fileName) {
+		if (currentTrack === fileName) { // Play/pause current track
+			if (!audio.paused) { // Current track is playing
+				play.pauseTrack(); // Pause current track
+			} else { // Current track is paused
+				play.playTrack(); // Play current track
+			}
+		} else { // Play another track
+			if (!!audio && !audio.paused) { // Track is already playing
+				play.pauseTrack(); // Pause this track
+			}
+			currentTrack = fileName; // Change current track name
+			audio = new Audio(PLAYURL + fileName); // Create new audio instance
+			play.playTrack(); // Play new track
+		}
+	},
+
+	// Function that plays current track
+	playTrack: function() {
+		audio.play();
+		console.log(`Playing the track: ${currentTrack}`);
+	},
+
+	// Function that pauses current track
+	pauseTrack: function() {
+		audio.pause();
+		console.log(`Track was paused: ${currentTrack}`);
 	}
 }
