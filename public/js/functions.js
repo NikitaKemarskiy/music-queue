@@ -4,9 +4,10 @@ const PLAYURL = '/files/play/';
 const FILESLISTURL = '/files/get';
 
 // Variables
+const tracks = new Map(); // Cache for tracks
 let audio; // Variable for current audio instance
 let currentTrack; // Variable for current track name
-let currentBtn; // Variable for current play button
+let currentButton; // Variable for current play button
 
 const processing = { // Functions for processing some data
 	
@@ -118,67 +119,117 @@ const upload = { // Functions for uploading new files to server
 		xhttp.open('POST', UPLOADURL, true);
 		xhttp.send(formData);
 	}
-}
+};
+
+const cache = { // Functions for caching
+
+	// Function that checks cache size and clears it necessary
+	checkCacheSize: function() {
+		if (tracks.size > 15) { // There're more that 15 tracks in cache
+			const keys = [...tracks.keys()];
+			console.dir(keys);
+			for (let i = 0; i < 3; i++) { // Delete 3 tracks from it
+				tracks.delete(keys[i]);
+			}
+		}
+	}
+};
 
 const play = { // Functions for playing tracks
 
 	// Function that sends request for playing the track
-	playFile: function(fileName, btn) {
-		if (currentTrack === fileName) { // Play/pause current track
-			if (!audio.paused) { // Current track is playing
-				play.pauseTrack(currentBtn); // Pause current track
-			} else { // Current track is paused
-				play.playTrack(currentBtn); // Play current track
-			}
-		} else { // Play another track
-			if (!!audio && !audio.paused) { // Track is already playing
-				play.pauseTrack(currentBtn); // Pause this track
-			}
-			currentTrack = fileName; // Change current track name
-			currentBtn = btn;
-			audio = new Audio(PLAYURL + fileName); // Create new audio instance
-			play.playTrack(currentBtn); // Play new track
-		}
+	load: function(fileName, playButton, playerInstance) {
+		playerInstance.updatePlay(fileName, playButton); // Update play on the player
 	},
 
 	// Function that plays current track
-	playTrack: function(btn) {
-		audio.play();
-		btn.style.backgroundImage = `url('/img/pauseTrack.svg')`;
-		btn.style.backgroundSize = `60% 60%`;
+	play: function() {
+		currentButton.style.backgroundImage = `url('/img/pauseTrack.svg')`;
+		currentButton.style.backgroundSize = `60% 60%`;
 		console.log(`Playing the track: ${currentTrack}`);
 	},
 
 	// Function that pauses current track
-	pauseTrack: function(btn) {
-		audio.pause();
-		btn.style.backgroundImage = `url('/img/playTrack.svg')`;
-		btn.style.backgroundSize = `70% 70%`;
+	pause: function() {
+		currentButton.style.backgroundImage = `url('/img/playTrack.svg')`;
+		currentButton.style.backgroundSize = `70% 70%`;
 
 		console.log(`Track was paused: ${currentTrack}`);
+	},
+
+	// Function that changes current play button
+	changeButton: function(playButton) {
+		if (currentButton !== playButton) { // New play button and current play button aren't the same buttons
+			currentButton = playButton;	// Change current play button
+		}
 	}
 }
 
-const player = { // Functions for controlling player
+const player = function(playerItems) { // Class for player
 
-	// Function that changes player content when starting playing new track
-	playFilePlayer: function(fileName, playerItems) {
-		if (currentTrack === fileName) { // Play/pause current track
-			if (!audio.paused) { // Current track is playing
-				player.playTrackPlayer(playerItems.buttons.play);
-			} else { // Current track is paused
-				player.pauseTrackPlayer(playerItems.buttons.play);
+	// Method that updates player status
+	this.updatePlay = function(fileName, playButton) {
+		if (!!playButton) { // Play button is specified
+			if (currentTrack === fileName) { // Play/pause current track
+				if (!audio.paused) { // Current track is playing
+					this.pause(); // Pause current track on the player
+					play.pause(); // Pause current track in the track list
+				} else { // Current track is paused
+					this.play(); // Play current track on the player
+					play.play(); // Play current track in the track list
+				}
+			} else { // Play another track
+				if (!!audio && !audio.paused) { // Track is already playing
+					this.pause(); // Pause current track on the player
+					play.pause(); // Pause current track in the track list
+				}
+				if (!tracks.has(fileName)) { // Track is not in the cache
+					tracks.set(fileName, new Audio(PLAYURL + fileName)); // Cache current track
+					cache.checkCacheSize(); // Check current cache size
+				}
+				currentTrack = fileName; // Change current track name
+				play.changeButton(playButton);
+				if (!!audio) { // Audio is not undefined
+					audio.removeEventListener('timeupdate', this.updateTime); // Remove timeupdate event listener
+				}
+				audio = tracks.get(fileName); // Write track from cache into audio variable
+				audio.currentTime = 0; // Play from the beginning
+				audio.addEventListener('timeupdate', this.updateTime); // Add timeupdate event listener
+
+				playerItems.info.name.textContent = fileName; // Set track name at the player
+				
+				this.play(); // Play current track on player
+				play.play(); // Play current track in the track list
+			}
+		} else if (!!currentTrack) { // Play button is not specified, current track is specified
+			if (currentTrack === fileName) { // Play/pause current track
+				if (!audio.paused) { // Current track is playing
+					this.pause(); // Pause current track on the player
+					play.pause(); // Pause current track in the track list
+				} else { // Current track is paused
+					this.play(); // Play current track on the player
+					play.play(); // Play current track in the track list
+				}
+			} else { // Play another track
+				//...
 			}
 		}
-	},
+	}
 
-	// Function that starts playing with player
-	playTrackPlayer: function(btn) {
-		btn.style.background = `url('/img/pause.svg') no-repeat 55% center`;
-	},
+	// Method that starts playing with player
+	this.play = function() {
+		audio.play(); // Start playing
+		playerItems.buttons.play.style.background = `url('/img/pause.svg') no-repeat 55% center`;
+	}
 
-	// Function that pauses playing with player
-	pauseTrackPlayer: function(btn) {
-		btn.style.background = `url('/img/play.svg') no-repeat 55% center`;
+	// Method that pauses playing with player
+	this.pause = function() {
+		audio.pause(); // Pause playing
+		playerItems.buttons.play.style.background = `url('/img/play.svg') no-repeat 55% center`;
+	}
+
+	// Method that updates current track time on player
+	this.updateTime = function() {
+		console.log(`=> ${audio.currentTime}`);
 	}
 }

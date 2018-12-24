@@ -21,10 +21,6 @@ div.block {
 	margin: 0 auto;
 	background-color: #fff;
 }
-/*Content div*/
-div.block div.content {
-
-}
 /*Player div*/
 div.app div.player {
 	position: fixed;
@@ -37,7 +33,7 @@ div.app div.player {
 }
 div.app div.player div.player-content {
 	margin: 0 auto;
-	width: 70%;
+	width: 80%;
 	height: 100%;
 	min-width: 970px;
 }
@@ -68,7 +64,7 @@ div.app div.player div.btn-shuffle {
 }
 div.app div.player div.playback-timeline {
 	height: 100%;
-	width: 63%;
+	width: 60%;
 }
 div.app div.player div.playback-timeline div.time-passed {
 	margin-top: -8px;
@@ -93,13 +89,18 @@ div.app div.player div.playback-timeline div.time-line {
 	width: 100%;
 }
 div.app div.player div.track-play {
+	width: 145px;
 	height: 100%;
 	float: right;
-	margin-right: 12px;
+	margin-right: 14px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	word-break: normal;
 }
 div.app div.player div.track-play div.track-name {
-	display: inline-block;
 	position: relative;
+	width: 100%;
 	top: 16px;
 }
 div.upload-block {
