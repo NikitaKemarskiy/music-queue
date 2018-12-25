@@ -55,37 +55,35 @@ window.onload = function() {
 		},
 		playTrackList: function(event) {
 			const listItem = this.parentElement;
-			const trackName = listItem.children[1].textContent; // Clicked track name
-			// Update track list and player statuses
-			trackListInstance.updatePlayStatus(trackName);
-			playerInstance.updatePlayStatus(trackName);
+			const trackName = listItem.children[1].textContent; // Get clicked track name
+
+			trackListInstance.updatePlayStatus(trackName); // Update track list play status
+			playerInstance.updatePlayStatus(trackName); // Update player play status
 		},
 		playTrackPlayer: function(event) {
-			// Update track list and player statuses
-			trackListInstance.updatePlayStatus();
-			playerInstance.updatePlayStatus();
-		}
-		/*playTrackList: function(event) {
-			const listItem = this.parentElement;
-			const trackName = listItem.children[1].textContent; // Clicked track name
-			play.load(trackName, this, playerInstance);
-		},
-		playTrackPlayer: function(event) {
-			const trackName = playerItems.info.name.textContent; // Clicked track name
-			playerInstance.updatePlay(trackName);
+			trackListInstance.updatePlayStatus(); // Update track list play status
+			playerInstance.updatePlayStatus(); // Update player play status
 		},
 		nextTrackPlayer: function(event) {
-			play.next(playerInstance);
+			const nextTrack = playerInstance.getNext(); // Play next track
+			if (!!nextTrack) { // Next track is specified
+				trackListInstance.updatePlayStatus(nextTrack); // Update track list play status
+				playerInstance.updatePlayStatus(nextTrack); // Update player play status
+			}
 		},
 		prevTrackPlayer: function(event) {
-			play.prev(playerInstance);
+			const prevTrack = playerInstance.getPrev(); // Play previous track
+			if (!!prevTrack) { // Previous track is specified
+				trackListInstance.updatePlayStatus(prevTrack); // Update track list play status
+				playerInstance.updatePlayStatus(prevTrack); // Update player play status
+			}
 		},
 		shufflePlayer: function(event) {
-			playerInstance.shuffle();
+			//...
 		},
 		repeatPlayer: function(event) {
-			playerInstance.repeat();
-		}*/
+			//...
+		}
 	}
 
 	// Drag events for uploading files
@@ -104,10 +102,10 @@ window.onload = function() {
 
 	// Player events
 	playerItems.buttons.play.addEventListener('click', handlers.playTrackPlayer);
-	/*playerItems.buttons.next.addEventListener('click', handlers.nextTrackPlayer);
+	playerItems.buttons.next.addEventListener('click', handlers.nextTrackPlayer);
 	playerItems.buttons.prev.addEventListener('click', handlers.prevTrackPlayer);
 	playerItems.buttons.shuffle.addEventListener('click', handlers.shufflePlayer);
-	playerItems.buttons.repeat.addEventListener('click', handlers.repeatPlayer);*/
+	playerItems.buttons.repeat.addEventListener('click', handlers.repeatPlayer);
 
 	// Initial tracklist load
 	generating.fillTrackList(list, handlers.playTrackList);

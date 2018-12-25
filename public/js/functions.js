@@ -171,6 +171,7 @@ const caching = {
 
 // Class for track list
 const trackList = function(list) {
+	
 	const listItems = list.children;
 	let currentButton; // Variable for current play button
 	
@@ -273,7 +274,6 @@ const player = function(playerItems) {
 				caching.cacheTrack(track); // Caching this track
 				audio = cacheMap.get(track); // Get this track from cache
 				caching.getDuration(audio, function(duration) { // Get the audio duration
-					console.log(`Got the duration: ${duration}`);
 					audio.addEventListener('timeupdate', updateTime); // Add timeupdate event listener
 					audio.currentTime = 0; // Play from the beginning
 					currentTrack = track; // Save track name inside the current track variable
@@ -301,6 +301,50 @@ const player = function(playerItems) {
 		}
 	}
 
+	// Method that returns the name of the next track
+	this.getNext = function() {
+		if (!!audio) { // Audio is specified
+			index = tracks[currentTrack]; // Find an index of a current track
+			const keys = Object.keys(tracks);
+			if (index === keys.length - 1) { // Index of a next track is 0
+				index = 0;
+			} else { // Index of a next track is current track's index + 1
+				index++;
+			}
+			const track = keys[index];
+			return track;
+		} else {
+			return null;
+		}
+	}
+
+	// Method that returns the name of the previous track
+	this.getPrev = function() {
+		if (!!audio) { // Audio is specified
+			index = tracks[currentTrack]; // Find an index of a current track
+			const keys = Object.keys(tracks);
+			if (index === 0) { // Index of a previous track is length - 1
+				index = keys.length - 1;
+			} else { // Index of a previous track is current track's index - 1
+				index--;
+			}
+			const track = keys[index];
+			return track;
+		} else {
+			return null;
+		}
+	}
+
+	// Method that shuffles playing
+	this.shuffle = function() {
+		//...
+	}
+
+	// Method that repeats playing
+	this.repeat = function() {
+		//...
+	}
+
 	// Methods for changing styles
 	this.changeStyles = {
 		play: function(track) {
@@ -325,177 +369,3 @@ const player = function(playerItems) {
 		}
 	};
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*const play = { // Functions for playing tracks
-
-	// Function that sends request for playing the track
-	load: function(trackName, playButton, playerInstance) {
-		playerInstance.updatePlay(trackName, playButton); // Update play on the player
-	},
-
-	// Function that plays current track
-	play: function() {
-		currentButton.style.backgroundImage = `url('/img/pauseTrack.svg')`;
-		currentButton.style.backgroundSize = `60% 60%`;
-		console.log(`Playing the track: ${currentTrack}`);
-	},
-
-	// Function that pauses current track
-	pause: function() {
-		currentButton.style.backgroundImage = `url('/img/playTrack.svg')`;
-		currentButton.style.backgroundSize = `70% 70%`;
-
-		console.log(`Track was paused: ${currentTrack}`);
-	},
-
-	// Function that starts playing the next track
-	next: function(playerInstance, repeat) {
-		if (!!currentTrack) {
-			if (!repeat) {
-				const trackList = document.querySelector('div.content div.music div.tracks ul');
-				const listItems = trackList.children;
-				let index = 0;
-				for (let i = 0; i < listItems.length - 1; i++) {
-					if (listItems[i].children[1].textContent === currentTrack) {
-						index = i + 1;
-					}
-				}
-				play.load(listItems[index].children[1].textContent, listItems[index].children[0], playerInstance);
-			} else {
-				play.load(currentTrack, currentButton, playerInstance);
-			}
-		}
-	},
-
-	// Function that starts playing the previous track
-	prev: function(playerInstance) {
-		if (!!currentTrack) {
-			const trackList = document.querySelector('div.content div.music div.tracks ul');
-			const listItems = trackList.children;
-			let index = listItems.length - 1;
-			for (let i = 1; i < listItems.length; i++) {
-				if (listItems[i].children[1].textContent === currentTrack) {
-					index = i - 1;
-				}
-			}
-			play.load(listItems[index].children[1].textContent, listItems[index].children[0], playerInstance);
-		}
-	},
-
-	// Function that changes current play button
-	changeButton: function(playButton) {
-		if (currentButton !== playButton) { // New play button and current play button aren't the same buttons
-			currentButton = playButton;	// Change current play button
-		}
-	}
-}
-
-const player = function(playerItems) { // Class for player
-
-	const self = this; // Link on this for inner methods
-	let repeat = false; // Is playing reversed
-
-	// Method that updates player status
-	this.updatePlay = function(trackName, playButton) {
-		if (!!playButton) { // Play button is specified
-			if (currentTrack === trackName) { // Play/pause current track
-				if (!audio.paused) { // Current track is playing
-					this.pause(); // Pause current track on the player
-					play.pause(); // Pause current track in the track list
-				} else { // Current track is paused
-					this.play(); // Play current track on the player
-					play.play(); // Play current track in the track list
-				}
-			} else { // Play another track
-				if (!!audio && !audio.paused) { // Track is already playing
-					this.pause(); // Pause current track on the player
-					play.pause(); // Pause current track in the track list
-				}
-				if (!tracks.has(trackName)) { // Track is not in the cache
-					tracks.set(trackName, new Audio(PLAYURL + trackName)); // Cache current track
-					cache.checkCacheSize(); // Check current cache size
-				}
-				play.changeButton(playButton); // Change play button
-				currentTrack = trackName; // Change current track name
-				if (!!audio) { // Audio is not undefined
-					audio.removeEventListener('timeupdate', this.updateTime); // Remove timeupdate event listener
-				}
-				audio = tracks.get(trackName); // Write track from cache into audio variable
-				audio.currentTime = 163; // Play from the beginning
-				audio.addEventListener('timeupdate', this.updateTime); // Add timeupdate event listener
-
-				playerItems.info.name.textContent = trackName; // Set track name at the player
-				
-				this.play(); // Play current track on player
-				play.play(); // Play current track in the track list
-			}
-		} else if (!!currentTrack) { // Play button is not specified, current track is specified
-			if (currentTrack === trackName) { // Play/pause current track
-				if (!audio.paused) { // Current track is playing
-					this.pause(); // Pause current track on the player
-					play.pause(); // Pause current track in the track list
-				} else { // Current track is paused
-					this.play(); // Play current track on the player
-					play.play(); // Play current track in the track list
-				}
-			}
-		}
-	}
-
-	// Method that starts playing with player
-	this.play = function() {
-		audio.play(); // Start playing
-		playerItems.buttons.play.style.background = `url('/img/pause.svg') no-repeat 55% center`;
-	}
-
-	// Method that pauses playing with player
-	this.pause = function() {
-		audio.pause(); // Pause playing
-		playerItems.buttons.play.style.background = `url('/img/play.svg') no-repeat 55% center`;
-	}
-
-	// Function that shuffles the playing
-	this.shuffle = function() {
-		if (!shuffle) {
-			shuffle = true;
-			playerItems.buttons.shuffle.style.background = "url('/img/shuffleActive.svg') no-repeat 55% center";
-		} else {
-			shuffle = false;
-			playerItems.buttons.shuffle.style.background = "url('/img/shuffle.svg') no-repeat 55% center";
-		}
-	}
-
-	// Function that repeats the playing
-	this.repeat = function() {
-		if (!repeat) {
-			repeat = true;
-			playerItems.buttons.repeat.style.background = "url('/img/repeatActive.svg') no-repeat 55% center";
-		} else {
-			repeat = false;
-			playerItems.buttons.repeat.style.background = "url('/img/repeat.svg') no-repeat 55% center";
-		}
-	}
-
-	// Method that updates current track time on player
-	this.updateTime = function() {
-		if (audio.ended) {
-			play.next(self, repeat);
-		}
-	}
-}*/
