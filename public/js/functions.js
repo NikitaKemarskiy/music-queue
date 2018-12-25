@@ -1,15 +1,15 @@
 // Constants
-const UPLOADURL = '/files/upload';
-const PLAYURL = '/files/play/';
-const FILESLISTURL = '/files/get';
+const FILESLISTURL = '/tracks/get';
+const PLAYURL = '/tracks/play/';
+const UPLOADURL = '/tracks/upload';
 
 // Variables
-const tracks = new Map(); // Cache for tracks
+const cacheMap = new Map(); // Cache for tracks
+let tracks = Object.create({}); // Object for tracks
 let audio; // Variable for current audio instance
-let currentTrack; // Variable for current track name
-let currentButton; // Variable for current play button
 
-const processing = { // Functions for processing some data
+// Functions for processing some data
+const processing = {
 	
 	// Function that creates form data with files to upload
 	createUploadFormData: function(files) {
@@ -34,7 +34,8 @@ const processing = { // Functions for processing some data
 	}
 };
 
-const generating = { // Functions for generating page content
+// Functions for generating page content
+const generating = {
 
 	// Function that gets list of files in storage
 	getFilesList: function() {
@@ -64,8 +65,9 @@ const generating = { // Functions for generating page content
 
 	// Function that fills track list
 	fillTrackList: function(trackList, handler) {
+		tracks = Object.create({});
 		generating.getFilesList().then(function(files) {
-			files.forEach(function(track) {
+			files.forEach(function(track, index) {
 				// List item DOM element
 				let trackItem = document.createElement('li');
 				trackItem.className = 'track-item';
@@ -92,12 +94,16 @@ const generating = { // Functions for generating page content
 
 				// Appending track item inside list
 				trackList.appendChild(trackItem);
+
+				// Add track to track object
+				tracks[track.name] = index;
 			});
 		});
 	}
 };
 
-const upload = { // Functions for uploading new files to server
+// Functions for uploading new files to server
+const upload = {
 
 	// Function that sends new files to server
 	sendNewFiles: function(files) {
@@ -121,25 +127,188 @@ const upload = { // Functions for uploading new files to server
 	}
 };
 
-const cache = { // Functions for caching
+// Functions for caching
+const caching = {
 
 	// Function that checks cache size and clears it necessary
 	checkCacheSize: function() {
-		if (tracks.size > 15) { // There're more that 15 tracks in cache
-			const keys = [...tracks.keys()];
+		if (cacheMap.size > 15) { // There're more that 15 tracks in cache
+			const keys = [...cacheMap.keys()];
 			console.dir(keys);
 			for (let i = 0; i < 3; i++) { // Delete 3 tracks from it
-				tracks.delete(keys[i]);
+				cacheMap.delete(keys[i]);
 			}
+		}
+	},
+
+	cacheTrack: function(track) {
+		if (!cacheMap.has(track)) { // Track is not in the cache
+			cacheMap.set(track, new Audio(PLAYURL + track)); // Cache current track
+			caching.checkCacheSize(); // Check current cache size
 		}
 	}
 };
 
-const play = { // Functions for playing tracks
+
+// Class for track list
+const trackList = function(list) {
+	const listItems = list.children;
+	let currentButton; // Variable for current play button
+	
+	this.updatePlayStatus = function(track) {
+		if (track) { // Track is specified
+			index = tracks[track]; 
+			const playButton = listItems[index].children[0];
+
+			if (currentButton === playButton) { // Play/pause current track
+				if (audio.paused) { // Audio isn't playing
+					this.changeStyles.play();
+				} else { // Audio is playing
+					this.changeStyles.pause();
+				}
+			} else { // Play another track
+				if (!!currentButton) { // Current button is specified
+					this.changeStyles.pause(); // Pause previous track
+				}
+				currentButton = playButton;
+				this.changeStyles.play();
+			}
+		} else if (!track && !!audio) { // Track isn't specified and audio is specified -> play/pause current track
+			if (audio.paused) { // Audio isn't playing
+				this.changeStyles.play();
+			} else { // Audio is playing
+				this.changeStyles.pause();
+			}
+		}
+	}
+
+	this.changeStyles = {
+		play: function() {
+			currentButton.style.backgroundImage = `url('/img/pauseTrack.svg')`;
+			currentButton.style.backgroundSize = `60% 60%`;
+		},
+		pause: function() {
+			currentButton.style.backgroundImage = `url('/img/playTrack.svg')`;
+			currentButton.style.backgroundSize = `70% 70%`;
+		}
+	};
+}
+
+// Class for player
+const player = function(playerItems) {
+
+	let currentTrack; // Variable for current track name
+	let shuffle = false; // Is playing shuffled
+	let repeat = false; // Is playing repeated
+
+	this.updatePlayStatus = function(track) { // Function that updates current play status
+		if (!!track) {
+			if (!audio) { // Audio isn't specified
+				this.play(track);
+				this.changeStyles.play(track);
+			} else if (track === currentTrack) { // Play/pause current track
+				if (audio.paused) { // Audio is paused
+					this.play();
+					this.changeStyles.play();
+				} else { // Audio is playing
+					this.pause();
+					this.changeStyles.pause();
+				}
+			} else { // Play another track
+				this.play(track);
+				this.changeStyles.play(track);
+			}
+		} else if (!!audio) { // Track isn't specified and audio is specified
+			if (audio.paused) { // Audio is paused
+				this.play();
+				this.changeStyles.play();
+			} else { // Audio is playing
+				this.pause();
+				this.changeStyles.pause();
+			}
+		}
+	}
+
+	this.play = function(track) {
+		if (!track && !!audio) { // Track isn't specified and current audio is specified
+			audio.play(); // Play current track
+		} else if (!!track && !!audio) { // Track and current audio are specified  
+
+			if (track === currentTrack) { // Play current track
+				audio.play();
+			} else { // Play another track
+				if (!audio.paused) { // Audio is playing
+					audio.pause(); // Pause it
+				}
+				caching.cacheTrack(track); // Caching this track
+				audio = cacheMap.get(track); // Get this track from cache
+				audio.currentTime = 0; // Play from the beginning
+				currentTrack = track; // Save track name inside the current track variable
+				audio.play();
+			}
+
+		} else if (!!track && !audio) { // Track is specified and current audio isn't specified
+			
+			caching.cacheTrack(track); // Caching this track
+			audio = cacheMap.get(track); // Get this track from cache
+			audio.currentTime = 0; // Play from the beginning
+			currentTrack = track; // Save track name inside the current track variable
+			audio.play();
+		
+		}
+	}
+
+	this.pause = function() {
+		if (!!audio) {
+			audio.pause();
+		}
+	}
+
+	this.changeStyles = {
+		play: function(track) {
+			playerItems.buttons.play.style.background = `url('/img/pause.svg') no-repeat 55% center`;
+		},
+		pause: function() {
+			playerItems.buttons.play.style.background = `url('/img/play.svg') no-repeat 55% center`;
+		},
+		shuffle: function() {
+			if (shuffle) {
+				playerItems.buttons.shuffle.style.background = "url('/img/shuffleActive.svg') no-repeat 55% center";
+			} else {
+				playerItems.buttons.shuffle.style.background = "url('/img/shuffle.svg') no-repeat 55% center";
+			}
+		},
+		repeat: function() {
+			if (repeat) {
+				playerItems.buttons.repeat.style.background = "url('/img/repeatActive.svg') no-repeat 55% center";
+			} else {
+				playerItems.buttons.repeat.style.background = "url('/img/repeat.svg') no-repeat 55% center";
+			}
+		}
+	};
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*const play = { // Functions for playing tracks
 
 	// Function that sends request for playing the track
-	load: function(fileName, playButton, playerInstance) {
-		playerInstance.updatePlay(fileName, playButton); // Update play on the player
+	load: function(trackName, playButton, playerInstance) {
+		playerInstance.updatePlay(trackName, playButton); // Update play on the player
 	},
 
 	// Function that plays current track
@@ -157,6 +326,40 @@ const play = { // Functions for playing tracks
 		console.log(`Track was paused: ${currentTrack}`);
 	},
 
+	// Function that starts playing the next track
+	next: function(playerInstance, repeat) {
+		if (!!currentTrack) {
+			if (!repeat) {
+				const trackList = document.querySelector('div.content div.music div.tracks ul');
+				const listItems = trackList.children;
+				let index = 0;
+				for (let i = 0; i < listItems.length - 1; i++) {
+					if (listItems[i].children[1].textContent === currentTrack) {
+						index = i + 1;
+					}
+				}
+				play.load(listItems[index].children[1].textContent, listItems[index].children[0], playerInstance);
+			} else {
+				play.load(currentTrack, currentButton, playerInstance);
+			}
+		}
+	},
+
+	// Function that starts playing the previous track
+	prev: function(playerInstance) {
+		if (!!currentTrack) {
+			const trackList = document.querySelector('div.content div.music div.tracks ul');
+			const listItems = trackList.children;
+			let index = listItems.length - 1;
+			for (let i = 1; i < listItems.length; i++) {
+				if (listItems[i].children[1].textContent === currentTrack) {
+					index = i - 1;
+				}
+			}
+			play.load(listItems[index].children[1].textContent, listItems[index].children[0], playerInstance);
+		}
+	},
+
 	// Function that changes current play button
 	changeButton: function(playButton) {
 		if (currentButton !== playButton) { // New play button and current play button aren't the same buttons
@@ -167,10 +370,13 @@ const play = { // Functions for playing tracks
 
 const player = function(playerItems) { // Class for player
 
+	const self = this; // Link on this for inner methods
+	let repeat = false; // Is playing reversed
+
 	// Method that updates player status
-	this.updatePlay = function(fileName, playButton) {
+	this.updatePlay = function(trackName, playButton) {
 		if (!!playButton) { // Play button is specified
-			if (currentTrack === fileName) { // Play/pause current track
+			if (currentTrack === trackName) { // Play/pause current track
 				if (!audio.paused) { // Current track is playing
 					this.pause(); // Pause current track on the player
 					play.pause(); // Pause current track in the track list
@@ -183,26 +389,26 @@ const player = function(playerItems) { // Class for player
 					this.pause(); // Pause current track on the player
 					play.pause(); // Pause current track in the track list
 				}
-				if (!tracks.has(fileName)) { // Track is not in the cache
-					tracks.set(fileName, new Audio(PLAYURL + fileName)); // Cache current track
+				if (!tracks.has(trackName)) { // Track is not in the cache
+					tracks.set(trackName, new Audio(PLAYURL + trackName)); // Cache current track
 					cache.checkCacheSize(); // Check current cache size
 				}
-				currentTrack = fileName; // Change current track name
-				play.changeButton(playButton);
+				play.changeButton(playButton); // Change play button
+				currentTrack = trackName; // Change current track name
 				if (!!audio) { // Audio is not undefined
 					audio.removeEventListener('timeupdate', this.updateTime); // Remove timeupdate event listener
 				}
-				audio = tracks.get(fileName); // Write track from cache into audio variable
-				audio.currentTime = 0; // Play from the beginning
+				audio = tracks.get(trackName); // Write track from cache into audio variable
+				audio.currentTime = 163; // Play from the beginning
 				audio.addEventListener('timeupdate', this.updateTime); // Add timeupdate event listener
 
-				playerItems.info.name.textContent = fileName; // Set track name at the player
+				playerItems.info.name.textContent = trackName; // Set track name at the player
 				
 				this.play(); // Play current track on player
 				play.play(); // Play current track in the track list
 			}
 		} else if (!!currentTrack) { // Play button is not specified, current track is specified
-			if (currentTrack === fileName) { // Play/pause current track
+			if (currentTrack === trackName) { // Play/pause current track
 				if (!audio.paused) { // Current track is playing
 					this.pause(); // Pause current track on the player
 					play.pause(); // Pause current track in the track list
@@ -210,8 +416,6 @@ const player = function(playerItems) { // Class for player
 					this.play(); // Play current track on the player
 					play.play(); // Play current track in the track list
 				}
-			} else { // Play another track
-				//...
 			}
 		}
 	}
@@ -228,8 +432,32 @@ const player = function(playerItems) { // Class for player
 		playerItems.buttons.play.style.background = `url('/img/play.svg') no-repeat 55% center`;
 	}
 
+	// Function that shuffles the playing
+	this.shuffle = function() {
+		if (!shuffle) {
+			shuffle = true;
+			playerItems.buttons.shuffle.style.background = "url('/img/shuffleActive.svg') no-repeat 55% center";
+		} else {
+			shuffle = false;
+			playerItems.buttons.shuffle.style.background = "url('/img/shuffle.svg') no-repeat 55% center";
+		}
+	}
+
+	// Function that repeats the playing
+	this.repeat = function() {
+		if (!repeat) {
+			repeat = true;
+			playerItems.buttons.repeat.style.background = "url('/img/repeatActive.svg') no-repeat 55% center";
+		} else {
+			repeat = false;
+			playerItems.buttons.repeat.style.background = "url('/img/repeat.svg') no-repeat 55% center";
+		}
+	}
+
 	// Method that updates current track time on player
 	this.updateTime = function() {
-		console.log(`=> ${audio.currentTime}`);
+		if (audio.ended) {
+			play.next(self, repeat);
+		}
 	}
-}
+}*/

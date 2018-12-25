@@ -77,7 +77,7 @@ server.get('/files/get', function(req, res) { // Get files get request handler
 	});
 });
 
-server.get('/files/play/:fileName', function(req, res) { // Play file get request handler
+server.get('/track/play/:fileName', function(req, res) { // Play track get request handler
 	storage.playTrack(req.params.fileName, res);
 });
 
@@ -88,33 +88,33 @@ server.post('/files/upload', function(req, res) { // Upload files post request h
 	form.maxFieldsSize = 10 * 1024 * 1024; // Max fields size except files - 10 MB 
 	form.multiples = true; // Allow to upload multiple files
 	form.hash = false; // Don't create hash
-	form.maxFileSize = 50 * 1024 * 1024; // Max file size - 50 MB
+	form.maxFileSize = 50 * 1024 * 1024; // Max track size - 50 MB
 
 	form.on('error', function(error) { // Upload error occured
 		logging.error(`Error: ${error.message}`);
 		res.end(`Error: files can't be uploaded`);
 	});
 
-	form.on('fileBegin', function(name, file) { // New file detected in the upload stream
-		file.path = path.join(form.uploadDir, file.name);
+	form.on('fileBegin', function(name, track) { // New track detected in the upload stream
+		track.path = path.join(form.uploadDir, track.name);
 	});
 
-	form.on('file', function(name, file) { // New file was received
-		const type = '.' + file.type.substring(file.type.indexOf('/') + 1); // Get file extension from file.type
+	form.on('file', function(name, track) { // New track was received
+		const type = '.' + track.type.substring(track.type.indexOf('/') + 1); // Get file extension from track.type
 		if (fileTypes.includes(type)) { // Uploaded file extension is allowed
 			console.dir({
-				size: file.size,
-				path: file.path,
-				name: file.name,
-				type: file.type
+				size: track.size,
+				path: track.path,
+				name: track.name,
+				type: track.type
 			});
-			storage.addTrack(file.name); // Add uploaded file to the storage data object
+			storage.addTrack(track.name); // Add uploaded track to the storage data object
 		} else { // Uploaded file extension isn't allowed
-			fs.unlink(file.path, function(error) {
+			fs.unlink(track.path, function(error) {
 				if (error) {
 					logging.error(`Error: ${error.message}`);
 				} else {
-					logging.log(`File ${file.name} has a forbidden extension`);
+					logging.log(`File ${track.name} has a forbidden extension`);
 				}
 			});
 		}		

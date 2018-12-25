@@ -16,9 +16,9 @@ const routerInit = function(config) {
 	const handlers = handlersConstructor(config);
 	// Routes
 	router.get('/', handlers.sendMain);
-	router.get('/files/get', handlers.getFiles);
-	router.get('/files/play/:fileName', handlers.playFile);
-	router.post('/files/upload', handlers.uploadFiles);
+	router.get('/tracks/get', handlers.getTracks);
+	router.get('/tracks/play/:track', handlers.playTrack);
+	router.post('/tracks/upload', handlers.uploadTracks);
 
 	return router;
 }

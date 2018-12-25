@@ -8,7 +8,7 @@ const caching = require(path.join(process.cwd(), 'api', 'caching', 'caching.js')
 
 // Constants
 const UPLOADURL = 'http://localhost:1488/files/upload';
-const PLAYURL = 'http://localhost:1488/files/play/';
+const PLAYURL = 'http://localhost:1488/track/play/';
 
 // Functions
 const handlersConstructor = function(config) {
@@ -19,7 +19,7 @@ const handlersConstructor = function(config) {
 
 			res.render(path.join(process.cwd(), 'public/html/main.hbs'), {});
 		},
-		getFiles: function(req, res) { // Get list of files request handler
+		getTracks: function(req, res) { // Get list of files request handler
 			res.header('StatusCode', '200');
 			res.header('Content-Type', 'application/json; charset=utf-8');
 
@@ -61,18 +61,18 @@ const handlersConstructor = function(config) {
 				res.end(data);
 			}
 		},
-		uploadFiles: function(req, res) { // Upload new files request handler
+		playTrack: function(req, res) { // Play the track request handler
+			res.header('StatusCode', '200');
+			res.header('Content-Type', 'text/plain; charset=utf-8');
+
+			request.get(PLAYURL + req.params.track).pipe(res); // Request to the file server
+			logging.log(`Playing the track: ${req.params.track}`);
+		},
+		uploadTracks: function(req, res) { // Upload new tracks request handler
 			res.header('StatusCode', '200');
 			res.header('Content-Type', 'text/plain; charset=utf-8');
 
 			req.pipe(request.post(UPLOADURL)).pipe(res); // Piping request to the file server
-		},
-		playFile: function(req, res) { // Play the track request handler
-			res.header('StatusCode', '200');
-			res.header('Content-Type', 'text/plain; charset=utf-8');
-
-			request.get(PLAYURL + req.params.fileName).pipe(res); // Request to the file server
-			logging.log(`Playing the track: ${req.params.fileName}`);
 		}
 	}
 	return handlers;
