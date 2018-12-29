@@ -40,17 +40,20 @@ const handlersConstructor = function(storage) {
 				res.end(`Error: can't play this track`);
 			} else {
 				res.header('StatusCode', '200'); // Success code
-				res.header('Accept-Ranges', 'bytes');
+				res.header('Accept-Ranges', 'bytes'); // Accept ranges header
 				res.header('Content-Type', data.type); // Content type header
 				res.header('Content-Length', data.size); // Content length header
-				res.header('Content-Range', `0-${data.size}/${data.size}`);
+				res.header('Content-Range', `0-${data.size}/${data.size}`); // Content range header
+				res.header('X-Content-Type-Options', 'nosniff'); // Prevent browser from defining the MIME-type
+
 				storage.playTrack(req.params.track, res);
 			}
 		}
 
 		this.uploadFiles = function(req, res) {
 			res.header('StatusCode', '200'); // Success code
-			res.header('Content-Type', 'application/json; charset=utf-8');
+			res.header('Content-Type', 'text/plain; charset=utf-8');
+			res.header('X-Content-Type-Options', 'nosniff'); // Prevent browser from defining the MIME-type
 
 			const form = formidable.IncomingForm(); // Create incoming formidable form
 			form.uploadDir = STORAGEPATH; // Upload directory for files
@@ -88,7 +91,6 @@ const handlersConstructor = function(storage) {
 							logging.error(`Error: ${error.message}`);
 						} else {
 							logging.log(`File ${track.name} has a forbidden extension`);
-							res.end();
 						}
 					});
 				}		

@@ -79,7 +79,7 @@ window.onload = function() {
 			}
 		},
 		shufflePlayer: function(event) {
-			//...
+			playerInstance.shuffle();
 		},
 		repeatPlayer: function(event) {
 			playerInstance.repeat();

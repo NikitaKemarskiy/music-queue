@@ -114,13 +114,6 @@ const storage = function() {
 	}
 
 	this.playTrack = function(track, res) {
-		/*fs.readFile(path.join(STORAGEPATH, track), function(error, buffer) {
-			if (error) {
-				logging.error(`Error: ${error.message}`);
-			} else {
-				res.end(buffer);
-			}
-		});*/
 		const readStream = fs.createReadStream(path.join(STORAGEPATH, track));
 		readStream.pipe(res);
 		readStream.on('end', function() {

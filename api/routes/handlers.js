@@ -15,13 +15,15 @@ const handlersConstructor = function(config) {
 	const handlers = {
 		sendMain: function(req, res) { // Send main page request handler
 			res.header('StatusCode', '200');
-			res.header('Content-Type', 'text/html; charset=utf-8');
+			//res.header('Content-Type', 'text/html; charset=utf-8');
+			res.header('X-Content-Type-Options', 'nosniff'); // Prevent browser from defining the MIME-type
 
 			res.render(path.join(process.cwd(), 'public/html/main.hbs'), {});
 		},
 		getTracks: function(req, res) { // Get list of files request handler
 			res.header('StatusCode', '200');
 			res.header('Content-Type', 'application/json; charset=utf-8');
+			res.header('X-Content-Type-Options', 'nosniff'); // Prevent browser from defining the MIME-type
 
 			let cache = caching.get();
 			let timeDiff = Date.now() - cache.updated;
@@ -62,8 +64,8 @@ const handlersConstructor = function(config) {
 			}
 		},
 		playTrack: function(req, res) { // Play the track request handler
-			request.get(PLAYURL + req.params.track).pipe(res); // Request to the file server
 			logging.log(`Playing the track: ${req.params.track}`);
+			request.get(PLAYURL + req.params.track).pipe(res); // Request to the file server
 		},
 		uploadTracks: function(req, res) { // Upload new tracks request handler
 			req.pipe(request.post(UPLOADURL)).pipe(res); // Piping request to the file server

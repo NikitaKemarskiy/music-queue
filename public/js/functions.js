@@ -203,8 +203,8 @@ const player = function(playerItems) {
 
 	let currentTrack; // Variable for current track name
 	let repeat = false; // Is playing repeated
+	let shuffle = false; // Is playing shuffled
 	const self = this; // Constant link on this
-	this.shuffle = false; // Is playing shuffled
 
 	// Handler for time update event
 	const updateTime = function() {
@@ -266,7 +266,7 @@ const player = function(playerItems) {
 				audio = cacheMap.get(track); // Get this track from cache	
 
 				audio.addEventListener('timeupdate', updateTime); // Add timeupdate event listener
-				audio.currentTime = 10; // Play from the beginning
+				audio.currentTime = 0; // Play from the beginning
 				currentTrack = track; // Save track name inside the current track variable
 				audio.play();
 			}
@@ -276,7 +276,7 @@ const player = function(playerItems) {
 			audio = cacheMap.get(track); // Get this track from cache	
 
 			audio.addEventListener('timeupdate', updateTime); // Add timeupdate event listener
-			audio.currentTime = 10; // Play from the beginning
+			audio.currentTime = 0; // Play from the beginning
 			currentTrack = track; // Save track name inside the current track variable
 			audio.play();
 		}
@@ -294,11 +294,23 @@ const player = function(playerItems) {
 		if (!!audio) { // Audio is specified
 			index = tracks[currentTrack]; // Find an index of a current track
 			const keys = Object.keys(tracks);
-			if (index === keys.length - 1) { // Index of a next track is 0
-				index = 0;
-			} else { // Index of a next track is current track's index + 1
-				index++;
+
+			if (!shuffle) { // Playing isn't shuffled
+				if (index === keys.length - 1) { // Index of a next track is 0
+					index = 0;
+				} else { // Index of a next track is current track's index + 1
+					index++;
+				}
+			} else {
+				while (true) {
+					let buff = Math.floor(Math.random() * keys.length);
+					if (index !== buff) {
+						index = buff;
+						break;
+					}
+				}
 			}
+			
 			const track = keys[index];
 			return track;
 		} else {
