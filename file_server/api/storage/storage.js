@@ -26,11 +26,25 @@ const storage = function() {
 	}
 
 	// Function that adds track to tracks data object
-	this.addTrack = function(track) {
+	this.addTrack = function(name, type, size) {
 		data.items.push({
-			name: track,
+			name,
+			type,
+			size,
 			plays: 0
 		});
+	}
+
+	// Function that returns one track data
+	this.getTrackData = function(track) {
+		logging.log(`Looking for this track: ${track}`);
+		for (let i = 0; i < data.items.length; i++) {
+			logging.dir(data.items[i].name);
+			if (data.items[i].name === track) {
+				return data.items[i];
+			}
+		}
+		return null;
 	}
 
 	// Function that returns tracks data object
@@ -85,6 +99,9 @@ const storage = function() {
 		return new Promise(function(resolve, reject) {
 			self.readTracksData().then(function(obj) {
 				data = obj;
+				if (!data.hasOwnProperty('items')) {
+					data.items = [];
+				}
 				lastUpdate = Date.now();
 				logging.log('=============');
 				logging.dir(data);
@@ -97,6 +114,13 @@ const storage = function() {
 	}
 
 	this.playTrack = function(track, res) {
+		/*fs.readFile(path.join(STORAGEPATH, track), function(error, buffer) {
+			if (error) {
+				logging.error(`Error: ${error.message}`);
+			} else {
+				res.end(buffer);
+			}
+		});*/
 		const readStream = fs.createReadStream(path.join(STORAGEPATH, track));
 		readStream.pipe(res);
 		readStream.on('end', function() {

@@ -82,7 +82,7 @@ window.onload = function() {
 			//...
 		},
 		repeatPlayer: function(event) {
-			//...
+			playerInstance.repeat();
 		}
 	}
 

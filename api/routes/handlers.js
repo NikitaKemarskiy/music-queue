@@ -62,16 +62,10 @@ const handlersConstructor = function(config) {
 			}
 		},
 		playTrack: function(req, res) { // Play the track request handler
-			res.header('StatusCode', '200');
-			res.header('Content-Type', 'text/plain; charset=utf-8');
-
 			request.get(PLAYURL + req.params.track).pipe(res); // Request to the file server
 			logging.log(`Playing the track: ${req.params.track}`);
 		},
 		uploadTracks: function(req, res) { // Upload new tracks request handler
-			res.header('StatusCode', '200');
-			res.header('Content-Type', 'text/plain; charset=utf-8');
-
 			req.pipe(request.post(UPLOADURL)).pipe(res); // Piping request to the file server
 		}
 	}

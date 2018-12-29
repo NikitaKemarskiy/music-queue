@@ -46,8 +46,12 @@ const generating = {
 			xhttp.onreadystatechange = function() {
 				if (this.readyState === 4 && this.status === 200) {
 					let files = JSON.parse(this.responseText);
-					files = [...files.items];
-					resolve(files);
+					if (!files.hasOwnProperty('items')) {
+						resolve([]);
+					} else {
+						files = [...files.items];
+						resolve(files);
+					}
 				}
 			};
 			
@@ -116,9 +120,9 @@ const upload = {
 		// AJAX request finished
 		xhttp.onreadystatechange = function() {
 			if (this.readyState === 4 && this.status === 200) {
-				console.log('===================');
 				console.log(this.response.toString());
-				console.log('===================');
+			} else if (this.status === 500) {
+				alert(`Error: can't upload this file`);
 			}
 		};
 		
@@ -146,28 +150,8 @@ const caching = {
 			cacheMap.set(track, new Audio(PLAYURL + track)); // Cache current track
 			caching.checkCacheSize(); // Check current cache size
 		}
-	},
-
-	// Function that gets track duration
-	getDuration: function (track, callback) {
-		if (!track.duration || track.duration === Infinity) {
-			track.addEventListener("durationchange", function (e) {
-				if (this.duration !== Infinity) {
-					track.remove();
-					track.currentTime = 0;
-					track.volume = 1;
-					callback(this.duration);
-				};
-			}, false);
-			track.currentTime = 24*60*60; //fake big time
-			track.volume = 0;
-			track.play();
-		} else {
-			callback(track.duration);
-		}
 	}
 };
-
 
 // Class for track list
 const trackList = function(list) {
@@ -177,7 +161,7 @@ const trackList = function(list) {
 	
 	this.updatePlayStatus = function(track) {
 		if (track) { // Track is specified
-			index = tracks[track]; 
+			index = tracks[track];
 			const playButton = listItems[index].children[0];
 
 			if (currentButton === playButton) { // Play/pause current track
@@ -218,14 +202,22 @@ const trackList = function(list) {
 const player = function(playerItems) {
 
 	let currentTrack; // Variable for current track name
-	let shuffle = false; // Is playing shuffled
 	let repeat = false; // Is playing repeated
+	const self = this; // Constant link on this
+	this.shuffle = false; // Is playing shuffled
 
 	// Handler for time update event
 	const updateTime = function() {
 		console.log(`=> current time: ${audio.currentTime}, duration: ${audio.duration}`);
 		if (audio.ended) {
-			// play next track
+			if (repeat) {
+				self.updatePlayStatus();
+			} else {
+				const nextTrack = self.getNext(); // Play next track
+				if (!!nextTrack) { // Next track is specified
+					playerItems.buttons.next.click();
+				}
+			}
 		}
 	}
 
@@ -263,7 +255,6 @@ const player = function(playerItems) {
 		if (!track && !!audio) { // Track isn't specified and current audio is specified
 			audio.play(); // Play current track
 		} else if (!!track && !!audio) { // Track and current audio are specified  
-
 			if (track === currentTrack) { // Play current track
 				audio.play();
 			} else { // Play another track
@@ -272,25 +263,22 @@ const player = function(playerItems) {
 				}
 				audio.removeEventListener('timeupdate', updateTime); // Remove timeupdate event listener
 				caching.cacheTrack(track); // Caching this track
-				audio = cacheMap.get(track); // Get this track from cache
-				caching.getDuration(audio, function(duration) { // Get the audio duration
-					audio.addEventListener('timeupdate', updateTime); // Add timeupdate event listener
-					audio.currentTime = 0; // Play from the beginning
-					currentTrack = track; // Save track name inside the current track variable
-					audio.play();
-				});
+				audio = cacheMap.get(track); // Get this track from cache	
+
+				audio.addEventListener('timeupdate', updateTime); // Add timeupdate event listener
+				audio.currentTime = 10; // Play from the beginning
+				currentTrack = track; // Save track name inside the current track variable
+				audio.play();
 			}
 
 		} else if (!!track && !audio) { // Track is specified and current audio isn't specified
-			
 			caching.cacheTrack(track); // Caching this track
-			audio = cacheMap.get(track); // Get this track from cache
-			caching.getDuration(audio, function(duration) {
-				console.log(`Got the duration: ${duration}`);
-				audio.addEventListener('timeupdate', updateTime); // Add timeupdate event listener
-				currentTrack = track; // Save track name inside the current track variable
-				audio.play();
-			});
+			audio = cacheMap.get(track); // Get this track from cache	
+
+			audio.addEventListener('timeupdate', updateTime); // Add timeupdate event listener
+			audio.currentTime = 10; // Play from the beginning
+			currentTrack = track; // Save track name inside the current track variable
+			audio.play();
 		}
 	}
 
@@ -337,12 +325,24 @@ const player = function(playerItems) {
 
 	// Method that shuffles playing
 	this.shuffle = function() {
-		//...
+		if (!shuffle) { // Playing isn't shuffled
+			shuffle = true;
+			this.changeStyles.shuffle();
+		} else { // Playing is shuffled
+			shuffle = false;
+			this.changeStyles.shuffle();
+		}
 	}
 
 	// Method that repeats playing
 	this.repeat = function() {
-		//...
+		if (!repeat) { // Playing isn't repeated
+			repeat = true;
+			this.changeStyles.repeat();
+		} else { // Playing is repeated
+			repeat = false;
+			this.changeStyles.repeat();
+		}
 	}
 
 	// Methods for changing styles
