@@ -3,6 +3,7 @@ window.onload = function() {
 	// Constant DOM elements
 	const block = document.querySelector('div.app div.block');
 	const uploadBlock = document.getElementsByClassName('upload-block')[0];
+	const searchBlock = document.querySelector('div.content div.music div.search input');
 	const list = document.querySelector('div.content div.music div.tracks ul');
 	const playButton = document.querySelector('div.content div.music div.tracks ul li div.btn');
 	
@@ -16,7 +17,9 @@ window.onload = function() {
 			shuffle: document.querySelector('div.app div.player div.player-content div.btn.btn-shuffle'),
 		},
 		info: {
-			name: document.querySelector('div.app div.player div.player-content div.track-play div.track-name')
+			time: document.querySelector('div.app div.player div.player-content div.playback-timeline div.time-passed'),
+			name: document.querySelector('div.app div.player div.player-content div.track-play div.track-name'),
+			timeline: document.querySelector('div.app div.player div.playback-timeline div.time-line-passed')
 		}
 	};
 	const playerInstance = new player(playerItems); // Player instance

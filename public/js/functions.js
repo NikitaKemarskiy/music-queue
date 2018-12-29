@@ -31,6 +31,17 @@ const processing = {
 		}
     	event.cancelBubble = true;
     	if (event.stopPropagation) event.stopPropagation();
+	},
+
+	// Function that converts seconds to minutes
+	convertSecToMin: function(seconds) {
+		seconds = Math.floor(seconds); // Round seconds value
+		const fullMinutes = ((seconds - seconds % 60) / 60).toString(); // Get full minutes value
+		let fullSeconds = (seconds - fullMinutes * 60).toString(); // Get full seconds value
+		if (fullSeconds < 10) { // If seconds value is less than 10
+			fullSeconds = '0' + fullSeconds; // Add 0 to the beginning of this value
+		}
+		return fullMinutes + ':' + fullSeconds; // Return minutes value
 	}
 };
 
@@ -208,8 +219,16 @@ const player = function(playerItems) {
 
 	// Handler for time update event
 	const updateTime = function() {
-		console.log(`=> current time: ${audio.currentTime}, duration: ${audio.duration}`);
-		if (audio.ended) {
+		console.log(`=> current time: ${audio.currentTime}, duration: ${audio.duration}`); // Log
+
+		const currentTime = processing.convertSecToMin(audio.currentTime); // Change player current time
+		playerItems.info.time.textContent = currentTime;
+		
+		if (audio.currentTime > 0) { // Change timeline width
+			playerItems.info.timeline.style.width = (audio.currentTime / audio.duration * 100).toString() + '%';
+		}
+
+		if (audio.ended) { // Audio was ended
 			if (repeat) {
 				self.updatePlayStatus();
 			} else {
@@ -267,6 +286,7 @@ const player = function(playerItems) {
 
 				audio.addEventListener('timeupdate', updateTime); // Add timeupdate event listener
 				audio.currentTime = 0; // Play from the beginning
+				playerItems.info.timeline.style.width = `0.1%`;
 				currentTrack = track; // Save track name inside the current track variable
 				audio.play();
 			}
@@ -277,6 +297,7 @@ const player = function(playerItems) {
 
 			audio.addEventListener('timeupdate', updateTime); // Add timeupdate event listener
 			audio.currentTime = 0; // Play from the beginning
+			playerItems.info.timeline.style.width = `0.1%`;
 			currentTrack = track; // Save track name inside the current track variable
 			audio.play();
 		}
