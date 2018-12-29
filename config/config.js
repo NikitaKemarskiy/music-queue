@@ -14,7 +14,7 @@ const config = function(session) {
 		port: 1488 // FileServer port
 	};
 	this.cache = {
-		maxAge: /*20 **/ 60e3 // Cache data max age time (20 minutes)
+		maxAge: 20 * 60e3 // Cache data max age time (20 minutes)
 	};
 	this.session = {
 		name: 'session_id', // Name of session id value

@@ -1,6 +1,7 @@
-// Constants
-const FILESLISTURL = '/tracks/get';
+// Consta // Specific track for search isn't specifiednts
+const GETURL = '/tracks/get/';
 const PLAYURL = '/tracks/play/';
+const FINDURL = '/tracks/find/';
 const UPLOADURL = '/tracks/upload';
 
 // Variables
@@ -13,7 +14,6 @@ const processing = {
 	
 	// Function that creates form data with files to upload
 	createUploadFormData: function(files) {
-		
 		let formData = new FormData(); // New form data, that will contain info for uploading and files
 
 		for (let i = 0; i < files.length; i++) { // Adding files to upload
@@ -25,7 +25,6 @@ const processing = {
 
 	// Function that prevent click event for parental elements
 	preventClickForParentalElement: function(event) {
-
 		if (!event) { // Prevent click event for parental li element (storage item)
 			event = window.event;
 		}
@@ -49,7 +48,7 @@ const processing = {
 const generating = {
 
 	// Function that gets list of files in storage
-	getFilesList: function() {
+	getFilesList: function(track) {
 		return new Promise(function(resolve, reject) {
 			let xhttp = new XMLHttpRequest();
 				
@@ -66,7 +65,11 @@ const generating = {
 				}
 			};
 			
-			xhttp.open('GET', FILESLISTURL, true);
+			if (!track) { // Specific track for search isn't specified
+				xhttp.open('GET', GETURL, true);
+			} else { // Specific track for search is specified
+				xhttp.open('GET', GETURL + track, true);
+			}
 			xhttp.send();
 		});
 	},
@@ -79,9 +82,9 @@ const generating = {
 	},
 
 	// Function that fills track list
-	fillTrackList: function(trackList, handler) {
+	fillTrackList: function(trackList, handler, track) {
 		tracks = Object.create({});
-		generating.getFilesList().then(function(files) {
+		generating.getFilesList(track).then(function(files) {
 			files.forEach(function(track, index) {
 				// List item DOM element
 				let trackItem = document.createElement('li');
@@ -121,7 +124,7 @@ const generating = {
 const upload = {
 
 	// Function that sends new files to server
-	sendNewFiles: function(files) {
+	sendNewFiles: function(files, callback) {
 
 		// Creating form data with files to upload
 		let formData = processing.createUploadFormData(files); 
@@ -131,9 +134,9 @@ const upload = {
 		// AJAX request finished
 		xhttp.onreadystatechange = function() {
 			if (this.readyState === 4 && this.status === 200) {
-				console.log(this.response.toString());
+				callback(null, this.response.toString());
 			} else if (this.status === 500) {
-				alert(`Error: can't upload this file`);
+				callback(`Error: can't upload this file`);
 			}
 		};
 		
@@ -273,7 +276,7 @@ const player = function(playerItems) {
 	this.play = function(track) {
 		if (!track && !!audio) { // Track isn't specified and current audio is specified
 			audio.play(); // Play current track
-		} else if (!!track && !!audio) { // Track and current audio are specified  
+		} else if (!!track && !!audio) { // Track and current audio are specified
 			if (track === currentTrack) { // Play current track
 				audio.play();
 			} else { // Play another track

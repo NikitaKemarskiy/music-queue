@@ -27,6 +27,11 @@ const storage = function() {
 
 	// Function that adds track to tracks data object
 	this.addTrack = function(name, type, size) {
+		for (let i = 0; i < data.items.length; i++) {
+			if (data.items[i].name === name) {
+				return null;
+			}
+		}
 		data.items.push({
 			name,
 			type,
@@ -39,7 +44,6 @@ const storage = function() {
 	this.getTrackData = function(track) {
 		logging.log(`Looking for this track: ${track}`);
 		for (let i = 0; i < data.items.length; i++) {
-			logging.dir(data.items[i].name);
 			if (data.items[i].name === track) {
 				return data.items[i];
 			}
@@ -124,5 +128,3 @@ const storage = function() {
 
 // Exports
 module.exports = storage;
-
-

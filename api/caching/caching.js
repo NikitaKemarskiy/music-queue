@@ -6,12 +6,14 @@ const logging = require(path.join(process.cwd(), 'api', 'logging', 'logging.js')
 
 // Database constructor
 const caching = function() {
+	// Cache
 	const cache = {
 		empty: true,
 		updated: Date.now(),
 		data: {}
 	};
 
+	// Insert new data into the cache
 	this.insert = function(data) {
 		logging.log(`Data was cached: ${data}`);
 		if (cache.empty) {
@@ -21,12 +23,14 @@ const caching = function() {
 		cache.updated = Date.now();
 	}
 
+	// Get data from the cache
 	this.get = function() {
 		return cache;
 	}
 
-	this.getUpdateTime = function() {
-		return cache.updated;
+	// Make cache outdated
+	this.outdate = function() {
+		cache.updated -= 24 * 60 * 60e3;
 	}
 };
 

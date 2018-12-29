@@ -23,7 +23,7 @@ process.on('exit', function(code) { // Exit the program listener
 });
 
 process.on('uncaughtException', function(error) { // Uncaught error listener
-	logging.error(`Error: ${error.message}`);
+	logging.error(`Error: ${error.message}, ${error.fileName} at ${error.lineNumber}`);
 	process.exit(1); // Exit the program with a status code 1 (error)
 });
 
@@ -55,7 +55,7 @@ server.use(function(req, res, next) { // Error 404
 // Express.js
 server.listen(config.server.port, config.server.host, function(error) {
 	if (error) {
-		logging.error(`Server error: ${error.message}`);
+		logging.error(`Server error: ${error.message}, ${error.fileName} at ${error.lineNumber}`);
 	} else {
 		logging.log(`Server is listening at ${config.server.host}:${config.server.port}`);
 	}

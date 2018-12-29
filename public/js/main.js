@@ -54,7 +54,15 @@ window.onload = function() {
 			// Getting dropped files
 			let files = event.dataTransfer.files; 
 			// Sending new files to server
-			upload.sendNewFiles(files);
+			upload.sendNewFiles(files, function(error, message) {
+				if (error) {
+					alert(`Error: can't upload this file`);
+				} else {
+					console.log(message);
+					generating.clearTrackList(list); // Clear track list
+					generating.fillTrackList(list, handlers.playTrackList); // Fill track list with the new tracks
+				}
+			});
 		},
 		playTrackList: function(event) {
 			const listItem = this.parentElement;
@@ -86,6 +94,10 @@ window.onload = function() {
 		},
 		repeatPlayer: function(event) {
 			playerInstance.repeat();
+		},
+		searchTrack: function(event) {
+			generating.clearTrackList(list); // Clear track list
+			generating.fillTrackList(list, handlers.playTrackList, this.value); // Fill track list with the new tracks
 		}
 	}
 
@@ -109,6 +121,9 @@ window.onload = function() {
 	playerItems.buttons.prev.addEventListener('click', handlers.prevTrackPlayer);
 	playerItems.buttons.shuffle.addEventListener('click', handlers.shufflePlayer);
 	playerItems.buttons.repeat.addEventListener('click', handlers.repeatPlayer);
+
+	// Search events
+	searchBlock.addEventListener('input', handlers.searchTrack);
 
 	// Initial tracklist load
 	generating.fillTrackList(list, handlers.playTrackList);

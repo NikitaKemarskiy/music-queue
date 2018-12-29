@@ -58,9 +58,9 @@ process.on('SIGINT', () => { // SIGINT Linux signal listener
 });
 
 // Routes
-server.get('/files/get', handlers.getTracks); // Get files get request handler
-server.get('/track/play/:track', handlers.playTrack); // Play track get request handler
-server.post('/files/upload', handlers.uploadFiles); // Upload files post request handler
+server.get('/tracks/get', handlers.getTracks); // Get files get request handler
+server.get('/tracks/play/:track', handlers.playTrack); // Play track get request handler
+server.post('/tracks/upload', handlers.uploadFiles); // Upload files post request handler
 
 // Express.js
 storage.initialize().then(function(result) {

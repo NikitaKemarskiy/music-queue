@@ -84,7 +84,6 @@ const handlersConstructor = function(storage) {
 					});
 					
 					storage.addTrack(track.name, track.type, track.size); // Add uploaded track to the storage data object
-					res.end();
 				} else { // Uploaded file extension isn't allowed
 					fs.unlink(track.path, function(error) {
 						if (error) {

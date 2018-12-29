@@ -17,6 +17,7 @@ const routerInit = function(config) {
 	// Routes
 	router.get('/', handlers.sendMain);
 	router.get('/tracks/get', handlers.getTracks);
+	router.get('/tracks/get/:track', handlers.findTrack);
 	router.get('/tracks/play/:track', handlers.playTrack);
 	router.post('/tracks/upload', handlers.uploadTracks);
 
